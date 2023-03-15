@@ -68,27 +68,27 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io \
   docker-buildx-plugin docker-compose-plugin
 
 # configure daemon data directory
+sudo systemctl stop docker.socket
 sudo service docker stop
 
-mkdir $DOCKER_ROOT
-sudo rm -rf /var/lib/docker
+sudo mv /var/lib/docker $DOCKER_ROOT
 
 sudo tee /etc/docker/daemon.json > /dev/null << EOF
 {
-  "data-root": "$DOCKER_ROOT/data"
+  "data-root": "$DOCKER_ROOT"
 }
 EOF
 
 # set docker permissions
-sudo chown -R $USER:$USER $DOCKER_ROOT/data
+sudo chown -R $USER:$USER $DOCKER_ROOT
 sudo usermod -aG docker $USER
 
 # add aliases to $HOME/.bash_aliases
 tee -a $HOME/.bash_aliases > /dev/null << EOF
-alias dcu="docker compose up"
-alias dcd="docker compose down"
-alias dce="docker compose exec"
-alias dcr="docker compose run"
+alias dcu="sudo docker compose up"
+alias dcd="sudo docker compose down"
+alias dce="sudo docker compose exec"
+alias dcr="sudo docker compose run"
 EOF
 
 # STEP 5: Git
