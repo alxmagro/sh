@@ -16,58 +16,69 @@ NVM_VER=$( \
 DOCKER_ROOT="$HOME/.docker"
 
 # update and install script dependencies
-sudo apt-get update
-sudo apt-get install curl wget gnupg2 xclip -y
+echo "Install script dependencies"
+
+sudo apt-get update > /dev/null
+sudo apt-get install curl wget gnupg2 xclip -y > /dev/null
 
 # STEP 2: Apps
 
-# install Google Chrome
-wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-sudo apt-get install ./google-chrome-stable_current_amd64.deb -y
+echo "Install Google Chrome"
 
-# install VSCode
-sudo apt install software-properties-common apt-transport-https wget -y
+wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+sudo apt-get install ./google-chrome-stable_current_amd64.deb -y > /dev/null
+
+echo "Install VS Code"
+
+sudo apt install software-properties-common apt-transport-https wget -y > /dev/null
 wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key add -
 sudo add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
 sudo apt-get install code
 
-# install Spotify
+echo "Install Spotify"
+
 curl -sS https://download.spotify.com/debian/pubkey_7A3A762FAFD4A51F.gpg | \
-  sudo gpg --dearmor --yes -o /etc/apt/trusted.gpg.d/spotify.gpg
+  sudo gpg --dearmor --yes -o /etc/apt/trusted.gpg.d/spotify.gpg > /dev/null
 echo "deb http://repository.spotify.com stable non-free" | \
-  sudo tee /etc/apt/sources.list.d/spotify.list
-sudo apt-get update && sudo apt-get install spotify-client
+  sudo tee /etc/apt/sources.list.d/spotify.list > /dev/null
+sudo apt-get update > /dev/null
+sudo apt-get install spotify-client > /dev/null
 
 # STEP 3: Dev Tools
 
-# install gitg
-sudo apt-get install gitg -y
+echo "Install gitg"
 
-# install Ruby Version Manager (rvm)
-gpg --keyserver keyserver.ubuntu.com --recv-keys $RVM_RECV_KEYS
-curl -sSL https://get.rvm.io | bash -s stable
+sudo apt-get install gitg -y > /dev/null
 
-# install Node Version Manager (nvm)
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/$NVM_VER/install.sh | bash
+echo "Install rvm"
+
+gpg --keyserver keyserver.ubuntu.com \
+    --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 \
+                7D2BAF1CF37B13E2069D6956105BD0E739499BDB > /dev/null
+curl -sSL https://get.rvm.io | bash -s stable > /dev/null
+
+echo "Install nvm"
+
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/$NVM_VER/install.sh | bash > /dev/null
 
 # STEP 4: Docker
 
-# setup docker repository
-sudo apt-get install ca-certificates curl gnupg lsb-release
-sudo mkdir -m 0755 -p /etc/apt/keyrings
+echo "Install docker"
+
+sudo apt-get install ca-certificates curl gnupg lsb-release > /dev/null
+sudo mkdir -m 0755 -p /etc/apt/keyrings  > /dev/null
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
-  sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+  sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg  > /dev/null
 echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
   https://download.docker.com/linux/ubuntu $UBUNTU_CODENAME stable" | \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-# install docker
-sudo apt-get update
+sudo apt-get update  > /dev/null
 sudo apt-get install docker-ce docker-ce-cli containerd.io \
-  docker-buildx-plugin docker-compose-plugin
+  docker-buildx-plugin docker-compose-plugin  > /dev/null
 
-# configure daemon data directory
+echo "Configure docker daemon (data-root)"
+
 sudo systemctl stop docker.socket
 sudo service docker stop
 
@@ -79,11 +90,13 @@ sudo tee /etc/docker/daemon.json > /dev/null << EOF
 }
 EOF
 
-# set docker permissions
+echo "Configure docker permissions"
+
 sudo chown -R $USER:$USER $DOCKER_ROOT
 sudo usermod -aG docker $USER
 
-# add aliases to $HOME/.bash_aliases
+echo "Add docker aliases"
+
 tee -a $HOME/.bash_aliases > /dev/null << EOF
 alias dcu="sudo docker compose up"
 alias dcd="sudo docker compose down"
@@ -93,24 +106,22 @@ EOF
 
 # STEP 5: Git
 
-# get info
 read -p "Enter your git name: " GIT_NAME
 read -p "Enter your git email: " GIT_EMAIL
 read -p "Enter your SSH passphrase: " SSH_PASSPHRASE
 
-# set git globals
+echo "Set git globals"
+
 git config --global user.name "$GIT_NAME"
 git config --global user.email "$GIT_EMAIL"
 
-# generate SSH keys
+echo "Generate SSH keys"
+
 ssh-keygen -t ed25519 -C "$SSH_PASSPHRASE"
-
-# FINAL
-
-# copy public key to clipboard
 cat $HOME/.ssh/id_ed25519.pub | xclip -selection clipboard
 
-# print message
+# FINAL STEP
+
 echo "---
 Script finished sucessfully!
 
