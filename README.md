@@ -1,7 +1,7 @@
 # Scripts
 
-Download via `curl`
+Run scripts from URL:
 
 ```
-curl https://raw.githubusercontent.com/alexandremagro/scripts/master/filename -O
+wget -qO- https://raw.githubusercontent.com/alexandremagro/scripts/master/filename | bash
 ```
