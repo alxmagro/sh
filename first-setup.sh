@@ -125,6 +125,19 @@ echo "# Generate SSH keys (and copy it to your clipboard)"
 ssh-keygen -t ed25519 -C "$GIT_EMAIL"
 cat $HOME/.ssh/id_ed25519.pub | xclip -selection clipboard
 
+# STEP 6: Customize bash
+
+tee ~/.bash_custom > /dev/null <<EOF
+if [ -n "\$SUDO_USER" ]; then
+  PS1='\${debian_chroot:+(\$debian_chroot)}\[\033[01;32m\]\w\[\033[00m\]\\\$ '
+else
+  PS1='\${debian_chroot:+(\$debian_chroot)}\[\033[01;34m\]\w\[\033[00m\]\\\$ '
+fi
+
+EOF
+
+echo '[[ -s ~/.bash_custom ]] && source ~/.bash_custom' >> ~/.bashrc
+
 # SECTION: Final
 
 echo "
