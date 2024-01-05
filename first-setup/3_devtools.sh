@@ -31,6 +31,14 @@ sudo sh -c '. /etc/os-release && echo "deb [signed-by=/usr/share/keyrings/packag
 sudo apt-get install pgadmin4-web
 sudo /usr/pgadmin4/bin/setup-web.sh
 
+echo "# Installing insomnia..."
+
+echo "deb [trusted=yes arch=amd64] https://download.konghq.com/insomnia-ubuntu/ default all" \
+  | sudo tee -a /etc/apt/sources.list.d/insomnia.list
+
+sudo apt-get update > /dev/null
+sudo apt-get install insomnia -y > /dev/null
+
 echo "Done!"
 echo "Now, move RVM script source from ~/.bash_profile to ~/.bashrc, to turn it always on."
 
