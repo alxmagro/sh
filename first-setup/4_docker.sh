@@ -4,11 +4,11 @@ set -e # flag exit if error
 
 DOCKER_ROOT="$HOME/.docker"
 
-echo "# Installing docker..."
+echo -e '\e[0;33mInstalling docker...\e[0m'
 
 curl https://get.docker.com/ | bash -
 
-echo "# Setting docker daemon..."
+echo -e '\e[0;33mSetting docker daemon...\e[0m'
 
 sudo systemctl stop docker.socket
 sudo service docker stop
@@ -21,12 +21,12 @@ sudo tee /etc/docker/daemon.json > /dev/null << EOF
 }
 EOF
 
-echo "# Setting docker permissions..."
+echo -e '\e[0;33mSetting docker permissions...\e[0m'
 
 sudo chown -R $USER:$USER $DOCKER_ROOT
 sudo usermod -aG docker $USER
 
-echo "# Adding docker aliases..."
+echo -e '\e[0;33mAdding docker aliases...\e[0m'
 
 tee -a $HOME/.bash_aliases > /dev/null << EOF
 alias dcu="sudo docker compose up"

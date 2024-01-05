@@ -2,7 +2,7 @@
 
 set -e # flag exit if error
 
-echo "# Setting OS customs..."
+echo -e '\e[0;33mSetting OS customs...\e[0m'
 
 tee ~/.bash_custom > /dev/null <<EOF
 if [ -n "\$SUDO_USER" ]; then
@@ -14,11 +14,11 @@ fi
 EOF
 echo '[[ -s ~/.bash_custom ]] && source ~/.bash_custom' >> ~/.bashrc
 
-echo "# Fix dual booting different times (windows/linux)"
+echo -e '\e[0;33mFixing dual booting different times (windows/linux)...\e[0m'
 
 timedatectl set-local-rtc 1 --adjust-system-clock
 
-echo "Fone!"
-echo "Reboot your system and have fun!"
+echo -e '\e[0;33mDone!\e[0m'
+echo -e '\e[0;33mReboot your system and have fun :)\e[0m'
 
 set +e
