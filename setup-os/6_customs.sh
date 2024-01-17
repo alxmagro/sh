@@ -11,6 +11,14 @@ else
   PS1='\${debian_chroot:+(\$debian_chroot)}\[\033[01;34m\]\w\[\033[00m\]\\\$ '
 fi
 
+# enhance cd to switch nvm node version automatically
+cd() {
+  builtin cd "$@"
+  if [[ -f .nvmrc ]]; then
+    nvm use > /dev/null
+  fi
+}
+
 EOF
 echo '[[ -s ~/.bash_custom ]] && source ~/.bash_custom' >> ~/.bashrc
 
