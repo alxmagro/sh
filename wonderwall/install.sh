@@ -2,20 +2,18 @@
 
 INSTALL_SCRIPT_NAME="wonderwall"
 
-# Verifica se o usuário passou os dois diretórios de destino
-if [ -z "$1" ] || [ -z "$2" ]; then
-    echo "Erro: você precisa fornecer o diretório do script e o diretório de wallpaper."
-    echo "Uso: $0 <caminho_para_o_diretorio_do_script> <caminho_para_o_diretorio_do_wallpaper>"
+# Verifica se o usuário passou o diretório do script
+if [ -z "$1" ]; then
+    echo "Erro: você precisa fornecer o diretório do script."
+    echo "Uso: $0 <caminho_para_o_diretorio_do_script>"
     exit 1
 fi
 
-# Define o nome do script e os diretórios de destino
-INSTALL_SCRIPT_NAME="wonderwall"
+# Define o nome do script e o diretório de destino
 INSTALL_SCRIPT_DIR="$1/$INSTALL_SCRIPT_NAME"
-INSTALL_WALLPAPER_DIR="$2"
 
-# Cria os diretórios de destino, se não existirem
-mkdir -p "$INSTALL_SCRIPT_DIR"
+# Cria o diretório do script e a subpasta assets, se não existirem
+mkdir -p "$INSTALL_SCRIPT_DIR/assets"
 
 # Verifica se jq está instalado, se não, instala
 if ! command -v jq &> /dev/null; then
@@ -25,12 +23,14 @@ fi
 
 # Passo 1: Criar o script run.sh no diretório de destino
 RUN_SCRIPT="$INSTALL_SCRIPT_DIR/run.sh"
-cat << EOF > "\$RUN_SCRIPT"
+cat << EOF > "$RUN_SCRIPT"
 #!/bin/bash
 
 # Diretório onde o script está localizado
 SCRIPT_DIR="\$(cd "\$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_FILE="\$SCRIPT_DIR/config.txt"
+WALLPAPER_DIR="\$SCRIPT_DIR/assets"
+WALLPAPER_FILE="\$WALLPAPER_DIR/wallpaper-of-the-day.jpg"
 
 # Lê o arquivo de configuração
 source "\$CONFIG_FILE"
@@ -56,7 +56,7 @@ fi
 "\$SCRIPT_DIR/middleware_\$RANDOM_ENGINE.sh" "\$CONFIG_FILE"
 
 # Define o wallpaper como plano de fundo no ElementaryOS
-gsettings set org.gnome.desktop.background picture-uri "file://\$WALLPAPER_DIR/\$WALLPAPER_FILENAME"
+gsettings set org.gnome.desktop.background picture-uri "file://\$WALLPAPER_FILE"
 gsettings set org.gnome.desktop.background picture-options "zoom"
 
 # Atualiza o arquivo de controle com a data atual
@@ -75,8 +75,7 @@ CONFIG_FILE=\$1
 source "\$CONFIG_FILE"
 
 # Diretórios e arquivos
-mkdir -p "\$WALLPAPER_DIR"
-WALLPAPER_FILE="\$WALLPAPER_DIR/\$WALLPAPER_FILENAME"
+WALLPAPER_FILE="\$SCRIPT_DIR/assets/wallpaper-of-the-day.jpg"
 
 # URL da API do Bing para buscar o wallpaper do dia
 BING_URL="https://www.bing.com"
@@ -110,8 +109,7 @@ if [ -z "\$UNSPLASH_CLIENT_ID" ]; then
 fi
 
 # Diretórios e arquivos
-mkdir -p "\$WALLPAPER_DIR"
-WALLPAPER_FILE="\$WALLPAPER_DIR/\$WALLPAPER_FILENAME"
+WALLPAPER_FILE="\$SCRIPT_DIR/assets/wallpaper-of-the-day.jpg"
 
 # Faz o download da imagem do Unsplash com base na consulta
 UNSPLASH_URL=\$(curl -H "Authorization: Client-ID \$UNSPLASH_CLIENT_ID" \
@@ -129,8 +127,6 @@ chmod +x "$UNSPLASH_SCRIPT"
 CONFIG_FILE="$INSTALL_SCRIPT_DIR/config.txt"
 cat << EOF > "$CONFIG_FILE"
 ENGINE=bing # bing, unsplash (require UNSPLASH_* variables) or multiples (comma-separated)
-WALLPAPER_DIR=$INSTALL_WALLPAPER_DIR
-WALLPAPER_FILENAME=wallpaper-of-the-day.jpg
 LAST_UPDATE=
 UNSPLASH_CLIENT_ID=
 UNSPLASH_QUERY=nature+night
@@ -170,7 +166,6 @@ chmod +x "$UNINSTALL_SCRIPT"
 
 echo "Instalação completa!"
 echo "Os scripts foram instalados em $INSTALL_SCRIPT_DIR."
-echo "Os wallpapers serão salvos em $INSTALL_WALLPAPER_DIR."
+echo "O wallpaper será salvo em $INSTALL_SCRIPT_DIR/assets."
 echo "Use o script de desinstalação para remover a configuração de autostart."
 echo "Para trocar o engine de wallpapers, edite o arquivo $CONFIG_FILE."
-
