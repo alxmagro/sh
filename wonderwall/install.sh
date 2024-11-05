@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 # Verifica se o usuário passou o diretório do script
 if [ -z "$1" ]; then
     echo "Erro: você precisa fornecer o diretório do script."
@@ -13,6 +12,7 @@ INSTALL_SCRIPT_NAME="wonderwall"
 INSTALL_SCRIPT_DIR="$1/$INSTALL_SCRIPT_NAME"
 
 # Cria o diretório do script e a subpasta assets, se não existirem
+mkdir -p "$INSTALL_SCRIPT_DIR"
 mkdir -p "$INSTALL_SCRIPT_DIR/assets"
 
 # Verifica se jq está instalado, se não, instala
@@ -29,8 +29,7 @@ cat << EOF > "$RUN_SCRIPT"
 # Diretório onde o script está localizado
 SCRIPT_DIR="\$(cd "\$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_FILE="\$SCRIPT_DIR/config.txt"
-WALLPAPER_DIR="\$SCRIPT_DIR/assets"
-WALLPAPER_FILE="\$WALLPAPER_DIR/wallpaper-of-the-day.jpg"
+WALLPAPER_FILE="\$SCRIPT_DIR/assets/wallpaper-of-the-day.jpg"
 
 # Lê o arquivo de configuração
 source "\$CONFIG_FILE"
@@ -53,7 +52,7 @@ else
 fi
 
 # Chama o middleware correspondente
-"\$SCRIPT_DIR/middleware_\$RANDOM_ENGINE.sh" "\$CONFIG_FILE"
+"\$SCRIPT_DIR/middleware_\$RANDOM_ENGINE.sh" "\$SCRIPT_DIR" "\$CONFIG_FILE"
 
 # Define o wallpaper como plano de fundo no ElementaryOS
 gsettings set org.gnome.desktop.background picture-uri "file://\$WALLPAPER_FILE"
@@ -71,7 +70,8 @@ BING_SCRIPT="$INSTALL_SCRIPT_DIR/middleware_bing.sh"
 cat << EOF > "$BING_SCRIPT"
 #!/bin/bash
 
-CONFIG_FILE=\$1
+SCRIPT_DIR="\$1"
+CONFIG_FILE="\$2"
 source "\$CONFIG_FILE"
 
 # Diretórios e arquivos
@@ -99,7 +99,8 @@ UNSPLASH_SCRIPT="$INSTALL_SCRIPT_DIR/middleware_unsplash.sh"
 cat << EOF > "$UNSPLASH_SCRIPT"
 #!/bin/bash
 
-CONFIG_FILE=\$1
+SCRIPT_DIR="\$1"
+CONFIG_FILE="\$2"
 source "\$CONFIG_FILE"
 
 # Verifica se a chave de acesso da API do Unsplash está configurada
