@@ -1,15 +1,15 @@
 #!/bin/bash
 
-INSTALL_SCRIPT_NAME="wonderwall"
 
 # Verifica se o usuário passou o diretório do script
 if [ -z "$1" ]; then
     echo "Erro: você precisa fornecer o diretório do script."
-    echo "Uso: $0 <caminho_para_o_diretorio_do_script>"
+    echo "Uso: $0 <PATH_TO_SCRIPT>"
     exit 1
 fi
 
 # Define o nome do script e o diretório de destino
+INSTALL_SCRIPT_NAME="wonderwall"
 INSTALL_SCRIPT_DIR="$1/$INSTALL_SCRIPT_NAME"
 
 # Cria o diretório do script e a subpasta assets, se não existirem
