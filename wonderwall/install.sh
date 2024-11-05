@@ -12,7 +12,7 @@ fi
 # Define o nome do script e os diretórios de destino
 INSTALL_SCRIPT_NAME="wonderwall"
 INSTALL_SCRIPT_DIR="$1/$INSTALL_SCRIPT_NAME"
-INSTALL_WALLPAPER_DIR=$2
+INSTALL_WALLPAPER_DIR="$2"
 
 # Cria os diretórios de destino, se não existirem
 mkdir -p "$INSTALL_SCRIPT_DIR"
@@ -25,42 +25,42 @@ fi
 
 # Passo 1: Criar o script run.sh no diretório de destino
 RUN_SCRIPT="$INSTALL_SCRIPT_DIR/run.sh"
-cat << EOF > "$RUN_SCRIPT"
+cat << EOF > "\$RUN_SCRIPT"
 #!/bin/bash
 
 # Diretório onde o script está localizado
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONFIG_FILE="$SCRIPT_DIR/config.txt"
+SCRIPT_DIR="\$(cd "\$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
+CONFIG_FILE="\$SCRIPT_DIR/config.txt"
 
 # Lê o arquivo de configuração
-source "$CONFIG_FILE"
+source "\$CONFIG_FILE"
 
 # Verifica se o script já foi executado hoje
-TODAY=$(date +%Y-%m-%d)
-if [ -f "$CONFIG_FILE" ] && grep -q "$TODAY" "$CONFIG_FILE"; then
+TODAY=\$(date +%Y-%m-%d)
+if [ -f "\$CONFIG_FILE" ] && grep -q "\$TODAY" "\$CONFIG_FILE"; then
     echo "O wallpaper já foi atualizado hoje."
     exit 0
 fi
 
 # Verifica se o ENGINE contém vírgula (múltiplos motores)
-if [[ "$ENGINE" == *","* ]]; then
+if [[ "\$ENGINE" == *","* ]]; then
     # Divide a string pela vírgula e escolhe um valor aleatório
-    IFS=',' read -r -a ENGINES <<< "$ENGINE"
-    RANDOM_ENGINE=${ENGINES[$RANDOM % ${#ENGINES[@]}]}
+    IFS=',' read -r -a ENGINES <<< "\$ENGINE"
+    RANDOM_ENGINE=\${ENGINES[\$RANDOM % \${#ENGINES[@]}]}
 else
     # Usa o valor único do ENGINE
-    RANDOM_ENGINE=$ENGINE
+    RANDOM_ENGINE=\$ENGINE
 fi
 
 # Chama o middleware correspondente
-"$SCRIPT_DIR/middleware_$RANDOM_ENGINE.sh" "$CONFIG_FILE"
+"\$SCRIPT_DIR/middleware_\$RANDOM_ENGINE.sh" "\$CONFIG_FILE"
 
 # Define o wallpaper como plano de fundo no ElementaryOS
-gsettings set org.gnome.desktop.background picture-uri "file://$WALLPAPER_DIR/$WALLPAPER_FILENAME"
+gsettings set org.gnome.desktop.background picture-uri "file://\$WALLPAPER_DIR/\$WALLPAPER_FILENAME"
 gsettings set org.gnome.desktop.background picture-options "zoom"
 
 # Atualiza o arquivo de controle com a data atual
-sed -i "s|LAST_UPDATE=.*|LAST_UPDATE=$TODAY|" "$CONFIG_FILE"
+sed -i "s|LAST_UPDATE=.*|LAST_UPDATE=\$TODAY|" "\$CONFIG_FILE"
 EOF
 
 # Tornar o script run.sh executável
