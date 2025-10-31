@@ -6,11 +6,10 @@
 wget -qO - https://raw.githubusercontent.com/alxmagro/sh/main/setup-os/<OS>/<SCRIPT_NAME.sh> | bash
 ```
 
-**Wonderwall:**
+**Utils:**
 
-Wonderwall is a bash script that sets a wallpaper every day.
+**Goto** - Quickly navigate to your project directories with autocomplete support.
 
 ```
-wget -qO - https://raw.githubusercontent.com/alxmagro/sh/main/wonderwall/install.sh |
-bash -s -- PATH_TO_SCRIPT PATH_TO_WALLPAPER
+wget -qO - https://raw.githubusercontent.com/alxmagro/sh/main/utils/goto.sh | bash
 ```
