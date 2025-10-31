@@ -26,18 +26,10 @@ echo -e '\e[0;33mInstalling pgadmin4...\e[0m'
 curl -fsS https://www.pgadmin.org/static/packages_pgadmin_org.pub | \
   sudo gpg --dearmor -o /usr/share/keyrings/packages-pgadmin-org.gpg
 
-sudo sh -c '. /etc/os-release && echo "deb [signed-by=/usr/share/keyrings/packages-pgadmin-org.gpg] https://ftp.postgresql.org/pub/pgadmin/pgadmin4/apt/$UBUNTU_CODENAME pgadmin4 main" > /etc/apt/sources.list.d/pgadmin4.list && apt update'
+sudo sh -c 'echo "deb [signed-by=/usr/share/keyrings/packages-pgadmin-org.gpg] https://ftp.postgresql.org/pub/pgadmin/pgadmin4/apt/$(lsb_release -cs) pgadmin4 main" > /etc/apt/sources.list.d/pgadmin4.list && apt update'
 
 sudo apt-get install pgadmin4-web
 sudo /usr/pgadmin4/bin/setup-web.sh
-
-echo -e '\e[0;33mInstalling insomnia...\e[0m'
-
-echo "deb [trusted=yes arch=amd64] https://download.konghq.com/insomnia-ubuntu/ default all" \
-  | sudo tee -a /etc/apt/sources.list.d/insomnia.list
-
-sudo apt-get update > /dev/null
-sudo apt-get install insomnia -y > /dev/null
 
 echo -e '\e[0;33mDone!\e[0m'
 echo -e '\e[0;33mNow, move RVM script source from ~/.bash_profile to ~/.bashrc, to turn it always on.\e[0m'
