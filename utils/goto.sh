@@ -1,44 +1,106 @@
 #!/bin/bash
+#
+# Single-file script installer.
+#
+# Designed by Alexandre Magro (alexandremagro@live.com)
 
-# Installation directory for user scripts
+### Base Variables
+
 TARGET_DIR="$HOME/.bash_scripts"
-mkdir -p "$TARGET_DIR"
-
-# User's bashrc file
 BASHRC="$HOME/.bashrc"
+SCRIPT_FILENAME="goto"
 
-# Prompt for GOTO_PATH
-read -rp "Enter your projects folder path [default: \$HOME/Documents]: " USER_PATH
-USER_PATH=${USER_PATH:-"$HOME/Documents"}
+### Base Functions
 
-# Comment markers
-COMMENT_VARS="# Bash script variables"
-COMMENT_SCRIPTS="# Bash scripts"
+# Prompt for a value and return it
+prompt_variable() {
+  local prompt default val
 
-# Add variables section if missing
-if ! grep -qxF "$COMMENT_VARS" "$BASHRC"; then
+  prompt="$1"
+  default="${2:-}"
+
+  if [ -n "$default" ]; then
+    read -rp "$prompt [default: $default]: " val
+    val=${val:-$default}
+  else
+    read -rp "$prompt: " val
+  fi
+
+  printf '%s' "$val"
+}
+
+# Ensure a section comment exists in bashrc
+ensure_section() {
+  local marker="$1"
+  [ -f "$BASHRC" ] || : > "$BASHRC"
+  if ! grep -qxF "$marker" "$BASHRC"; then
     echo "" >> "$BASHRC"
-    echo "$COMMENT_VARS" >> "$BASHRC"
-fi
+    echo "$marker" >> "$BASHRC"
+  fi
+}
 
-# Add scripts section if missing
-if ! grep -qxF "$COMMENT_SCRIPTS" "$BASHRC"; then
-    echo "" >> "$BASHRC"
-    echo "$COMMENT_SCRIPTS" >> "$BASHRC"
-fi
+# Insert or update an environment variable in bashrc
+SET_VARS=()
+set_var() {
+  local name="$1"
+  local value="$2"
+  local marker="# Bash script variables"
+  local export_line="export $name=\"$value\""
 
-# Export line for GOTO_PATH
-EXPORT_LINE="export GOTO_PATH=\"$USER_PATH\""
+  ensure_section "$marker"
 
-# Insert or update GOTO_PATH under the variables section
-if grep -q "export GOTO_PATH=" "$BASHRC"; then
-    sed -i "s|^export GOTO_PATH=.*|$EXPORT_LINE|" "$BASHRC"
-else
-    sed -i "/$COMMENT_VARS/a $EXPORT_LINE" "$BASHRC"
-fi
+  if grep -qE "^[[:space:]]*export[[:space:]]+$name=" "$BASHRC"; then
+    sed -i "s|^[[:space:]]*export[[:space:]]\+$name=.*|$export_line|" "$BASHRC"
+  else
+    sed -i "/$(printf '%s' "$marker" | sed 's/[].[^$*\/]/\\&/g')/a $export_line" "$BASHRC"
+  fi
 
-# Create goto.sh script content
-cat > "$TARGET_DIR/goto.sh" <<'EOF'
+  SET_VARS+=("$name=$value")
+}
+
+# Create the target script from stdin
+create_script() {
+  mkdir -p "$TARGET_DIR"
+  local target_file="$TARGET_DIR/$SCRIPT_FILENAME.sh"
+  cat > "$target_file"
+  chmod +x "$target_file"
+}
+
+# Add source line to bashrc under "# Bash scripts"
+set_source() {
+  local marker="# Bash scripts"
+  local source_line="source \$HOME/.bash_scripts/$SCRIPT_FILENAME.sh"
+
+  ensure_section "$marker"
+
+  if ! grep -Fxq "$source_line" "$BASHRC"; then
+    sed -i "/$(printf '%s' "$marker" | sed 's/[].[^$*\/]/\\&/g')/a $source_line" "$BASHRC"
+  fi
+}
+
+# Print final summary automatically
+echo_message() {
+  echo ""
+  echo "$SCRIPT_FILENAME installed successfully!"
+  if [ "${#SET_VARS[@]}" -gt 0 ]; then
+    echo ""
+    echo "Configured environment variables:"
+    for kv in "${SET_VARS[@]}"; do
+      name="${kv%%=*}"
+      value="${kv#*=}"
+      printf "  %s=%s\n" "$name" "$value"
+    done
+  fi
+  echo ""
+  echo "Reload your terminal or run: source ~/.bashrc"
+  echo ""
+}
+
+# Script
+
+GOTO_PATH=$(prompt_variable "Enter your projects folder path" "$HOME/Documents")
+
+create_script <<'EOF'
 #!/bin/bash
 
 # Check if GOTO_PATH is defined
@@ -70,11 +132,7 @@ goto() {
 _goto_complete() {
   local cur projects
   cur="${COMP_WORDS[COMP_CWORD]}"
-
-  # if GOTO_PATH doesn't exist or is not a dir, do nothing
   [ -d "$GOTO_PATH" ] || return 0
-
-  # list subdirectories (basename), handle no results gracefully
   projects=$(ls -1d "$GOTO_PATH"/*/ 2>/dev/null | xargs -n 1 basename 2>/dev/null || true)
   COMPREPLY=( $(compgen -W "$projects" -- "$cur") )
 }
@@ -82,19 +140,6 @@ _goto_complete() {
 complete -F _goto_complete goto
 EOF
 
-# Make it executable
-chmod +x "$TARGET_DIR/goto.sh"
-
-# Source line for bashrc
-SOURCE_LINE="source \$HOME/.bash_scripts/goto.sh"
-
-# Insert the source line below the comment if it is not already present
-if ! grep -Fxq "$SOURCE_LINE" "$BASHRC"; then
-    sed -i "/$COMMENT_SCRIPTS/a $SOURCE_LINE" "$BASHRC"
-fi
-
-echo ""
-echo "goto.sh installed successfully!"
-echo "  GOTO_PATH set to: $USER_PATH"
-echo ""
-echo "Reload the terminal."
+set_var "GOTO_PATH" "$GOTO_PATH"
+set_source
+echo_message
