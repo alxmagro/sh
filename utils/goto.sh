@@ -18,10 +18,10 @@
 #   goto.mode   => '-P' or '-L' (navigates do physical directory by default)
 
 # Examples:
-#   goto --config path "$HOME/MyFavoriteFolder"
-#   goto --config path "$HOME/.goto_links"
-#   goto --config mode "-L"
-#   goto --add Projects $HOME/Documents/Code/Projects
+#   goto --config path ~/MyFavoriteFolder
+#   goto --config path ~/.goto_links
+#   goto --config mode -L
+#   goto --add Projects ~/Documents/Code/Projects
 #   goto Projects
 
 ### Base Variables
@@ -145,10 +145,10 @@ goto() {
     echo "  goto.mode   => '-P' or '-L' (Physical directory by default)"
     echo
     echo "Examples:"
-    echo "  goto --config path \"$HOME/MyFavoriteFolder\""
-    echo "  goto --config path \"$HOME/.goto_links\""
-    echo "  goto --config mode \"-L\""
-    echo "  goto --add Projects $HOME/Documents/Code/Projects"
+    echo "  goto --config path ~/Documents/MyFavoriteFolder"
+    echo "  goto --config path ~/.goto_links"
+    echo "  goto --config mode -L"
+    echo "  goto --add Projects ~/Documents/Code/Projects"
     echo "  goto Projects"
     return 0
   fi
@@ -184,7 +184,6 @@ goto() {
   fi
   # ---- END CONFIG MODE ----
 
-
   # --- CONFIG ENSURE ----
   if [ -z "$GOTO_PATH" ]; then
     echo "goto.path is not configured."
@@ -193,7 +192,7 @@ goto() {
     echo "  goto --config path <absolute/path/to/folder>"
     echo
     echo "Note:"
-    echo "  The path must be absolute. The \"~\" shortcut is not supported."
+    echo "  If you edit the config file manually, paths must be absolute."
     return 1
   fi
   # --- CONFIG ENSURE ----
@@ -205,21 +204,14 @@ goto() {
       return 1
     fi
 
-    # Expand "~" in the name *and* target
     local name="$2"
-    name="${name/#\~/$HOME}"
-
     local target="$3"
-    target="${target/#\~/$HOME}"
-
-    # Full symlink path
-    local link_path="$GOTO_PATH/$name"
 
     mkdir -p "$GOTO_PATH"
-    ln -sfn "$target" "$link_path"
+    ln -sfn "$target" "$GOTO_PATH/$name"
 
     echo "Created symlink:"
-    echo "  $link_path -> $target"
+    echo "  $name -> $target"
     return 0
   fi
   # ---- END ADD MODE ----
