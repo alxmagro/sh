@@ -79,7 +79,7 @@ if [ ${#OS_LIST[@]} -eq 0 ]; then
   exit 1
 fi
 
-OS=$(gum choose --header "Select your operating system:" "${OS_LIST[@]}")
+OS=$(gum choose --header "Select your operating system:" "${OS_LIST[@]}" < /dev/tty)
 echo
 
 # Select scripts
@@ -90,7 +90,7 @@ if [ ${#SCRIPT_LIST[@]} -eq 0 ]; then
   exit 1
 fi
 
-mapfile -t SELECTED < <(gum choose --no-limit --header "Select scripts to run:" "${SCRIPT_LIST[@]}")
+mapfile -t SELECTED < <(gum choose --no-limit --header "Select scripts to run:" "${SCRIPT_LIST[@]}" < /dev/tty)
 
 if [ ${#SELECTED[@]} -eq 0 ]; then
   echo "No scripts selected."
@@ -103,7 +103,7 @@ echo
 mapfile -t UTILS_LIST < <(api_list_files "utils")
 
 if [ ${#UTILS_LIST[@]} -gt 0 ]; then
-  mapfile -t SELECTED_UTILS < <(gum choose --no-limit --header "Select utils to install (optional):" "${UTILS_LIST[@]}" || true)
+  mapfile -t SELECTED_UTILS < <(gum choose --no-limit --header "Select utils to install (optional):" "${UTILS_LIST[@]}" < /dev/tty || true)
   echo
 fi
 
