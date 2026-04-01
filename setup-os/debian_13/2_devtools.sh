@@ -21,6 +21,11 @@ echo -e '\e[0;33mInstalling nvm...\e[0m'
 
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/$NVM_VER/install.sh | bash > /dev/null
 
+echo -e '\e[0;33mInstalling postgresql...\e[0m'
+
+sudo apt install -y postgresql-common
+sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+
 echo -e '\e[0;33mInstalling pgadmin4...\e[0m'
 
 curl -fsS https://www.pgadmin.org/static/packages_pgadmin_org.pub | \
@@ -28,7 +33,7 @@ curl -fsS https://www.pgadmin.org/static/packages_pgadmin_org.pub | \
 
 sudo sh -c 'echo "deb [signed-by=/usr/share/keyrings/packages-pgadmin-org.gpg] https://ftp.postgresql.org/pub/pgadmin/pgadmin4/apt/$(lsb_release -cs) pgadmin4 main" > /etc/apt/sources.list.d/pgadmin4.list && apt update'
 
-sudo apt-get install pgadmin4-web
+sudo apt-get install pgadmin4-web -y
 sudo /usr/pgadmin4/bin/setup-web.sh
 
 echo -e '\e[0;33mDone!\e[0m'
