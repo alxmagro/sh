@@ -1,4 +1,5 @@
 #!/bin/bash
+# desc: Configure bash aliases
 
 set -e
 

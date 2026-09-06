@@ -1,4 +1,5 @@
 #!/bin/bash
+# desc: Configure system keybindings
 
 set -e
 

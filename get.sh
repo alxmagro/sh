@@ -2,7 +2,11 @@
 #
 # Bootstrap for a fresh machine:
 #
-#   wget -qO - https://raw.githubusercontent.com/alxmagro/nikit/main/get.sh | bash -s debian_13
+#   wget -qO - https://raw.githubusercontent.com/alxmagro/nikit/main/get.sh | bash
+#
+# That opens a picker for the distro and its modules. To run non-interactively:
+#
+#   wget -qO - .../get.sh | bash -s -- -d debian_13 -m scripts,docker
 #
 # Unpacks the repo into a temporary folder and hands over to the install.sh
 # inside it. Arguments go straight through.

@@ -1,4 +1,5 @@
 #!/bin/bash
+# desc: Configure nano (Modern keybindings)
 
 set -e
 

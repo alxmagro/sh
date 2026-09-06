@@ -1,4 +1,5 @@
 #!/bin/bash
+# desc: Install helpful new commands
 
 set -e
 

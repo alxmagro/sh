@@ -1,4 +1,5 @@
 #!/bin/bash
+# desc: Include fonts (Inter, Open Sans, Roboto Mono)
 
 set -e
 

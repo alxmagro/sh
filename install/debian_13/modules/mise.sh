@@ -1,4 +1,5 @@
 #!/bin/bash
+# desc: Install mise (Dev tools manager)
 
 set -e
 

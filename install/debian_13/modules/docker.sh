@@ -1,4 +1,5 @@
 #!/bin/bash
+# desc: Install docker
 
 set -e
 

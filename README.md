@@ -3,7 +3,14 @@
 A setup for Debian, with a bunch of quality of life changes for developers.
 
 ```
-wget -qO - https://raw.githubusercontent.com/alxmagro/nikit/main/get.sh | bash -s debian_13
+wget -qO - https://raw.githubusercontent.com/alxmagro/nikit/main/get.sh | bash
+```
+
+Opens a picker to choose the distro and its modules. Run it non-interactively
+with flags:
+
+```
+wget -qO - https://raw.githubusercontent.com/alxmagro/nikit/main/get.sh | bash -s -- -d debian_13 -m scripts,docker
 ```
 
 **What it do?**

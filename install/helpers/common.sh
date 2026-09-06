@@ -42,6 +42,15 @@ run() {
   [ -f "$path" ] || abort "No such script: $1"
 
   name=$(basename "$1" .sh)
+
+  # Honour an explicit module selection when install.sh set one.
+  if [ -n "${SH_SELECTED:-}" ]; then
+    case " $SH_SELECTED " in
+      *" $name "*) ;;
+      *) return 0 ;;
+    esac
+  fi
+
   log="$SH_LOG_DIR/$name.log"
 
   mkdir -p "$SH_LOG_DIR"
