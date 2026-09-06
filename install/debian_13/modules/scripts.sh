@@ -5,12 +5,18 @@ set -e
 
 log 'Copying commands...'
 
-# Emptied rather than copied over: a file that was renamed or dropped would
-# otherwise keep being loaded from an earlier install. config/ is left alone.
-rm -rf "$PROJECT_ROOT/python" "$PROJECT_ROOT/shell" "$PROJECT_ROOT/init.sh"
-
+# Install owns this tree: wipe and lay it down fresh so a renamed or dropped
+# file never lingers from an earlier run.
+rm -rf "$PROJECT_ROOT"
 ensure_folder "$PROJECT_ROOT"
+cp -r "$SH_ROOT"/src/shared/* "$PROJECT_ROOT/"
 
-cp -r "$SH_ROOT"/src/* "$PROJECT_ROOT/"
+# The user owns their config: seed a file only when it is missing.
+log 'Seeding config...'
+ensure_folder "$CONFIG_ROOT"
+for file in "$SH_ROOT"/src/config/*; do
+  dest="$CONFIG_ROOT/$(basename "$file")"
+  [ -e "$dest" ] || cp "$file" "$dest"
+done
 
 append_once "$HOME/.bashrc" 'source ~/.local/share/nikit/init.sh'

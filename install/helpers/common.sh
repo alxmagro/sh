@@ -7,9 +7,11 @@
 
 ### Paths
 
-# Everything the install writes into the user's home lives here.
+# Install-owned files (wiped and rewritten each run) live here.
 PROJECT_ROOT="${XDG_DATA_HOME:-$HOME/.local/share}/nikit"
-export PROJECT_ROOT
+# User-owned config (only seeded when missing) lives here.
+CONFIG_ROOT="${XDG_CONFIG_HOME:-$HOME/.config}/nikit"
+export PROJECT_ROOT CONFIG_ROOT
 
 SH_LOG_DIR="${TMPDIR:-/tmp}/sh-install"
 

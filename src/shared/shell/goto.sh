@@ -9,20 +9,17 @@
 #   goto                            List the configured roots
 #   goto --set <key> <path>         Create or update a root
 #   goto --rm <key>                 Remove a root
-#   goto --config mode [-P|-L]      Get or set the cd mode (physical / logical)
 #   goto --help                     Show this help message
 #
-# Configuration lives in config/goto.conf, next to the other nikit files.
-# One "namespace.key = value" per line; '#' starts a comment:
+# Configuration lives in ${XDG_CONFIG_HOME:-~/.config}/nikit/goto.conf.
+# One "namespace.key = value" per line; '#' starts a comment. Keys stay
+# namespaced (paths.*) so a future setting can share the file without clashing:
 #
-#   config.mode = -P
-#   paths.code  = /home/me/Documents/code
-#   paths.dots  = /home/me/.dotfiles
-#
-# GOTO_MODE in the environment still wins over config.mode.
+#   paths.code = /home/me/Documents/code
+#   paths.dots = /home/me/.dotfiles
 
 _goto_conf() {
-  echo "${XDG_DATA_HOME:-$HOME/.local/share}/nikit/config/goto.conf"
+  echo "${XDG_CONFIG_HOME:-$HOME/.config}/nikit/goto.conf"
 }
 
 # _goto_get <namespace.key> - print the raw value, or return 1 if absent.
@@ -146,12 +143,6 @@ _goto_rm() {
   echo "Removed $key"
 }
 
-_goto_mode() {
-  local m
-  m="${GOTO_MODE:-$(_goto_get config.mode)}"
-  printf '%s' "${m:--P}"
-}
-
 goto() {
   local key rest root target listed exec_flag
   local -a cmd=()
@@ -167,7 +158,6 @@ goto() {
       echo "  goto                            List the configured roots"
       echo "  goto --set <key> <path>         Create or update a root"
       echo "  goto --rm <key>                 Remove a root"
-      echo "  goto --config mode [-P|-L]      Get or set the cd mode (physical / logical)"
       echo "  goto --help                     Show this help message"
       echo
       echo "Config: $(_goto_conf)"
@@ -187,27 +177,6 @@ goto() {
         return 1
       fi
       _goto_rm "$2"
-      return
-      ;;
-    --config)
-      case "${2:-}" in
-        mode)
-          if [ -n "${3:-}" ]; then
-            case "$3" in
-              -P | -L) ;;
-              *) echo "goto: mode must be -P or -L" >&2; return 1 ;;
-            esac
-            _goto_put config.mode "$3" && echo "Set mode = $3"
-          else
-            _goto_mode
-            echo
-          fi
-          ;;
-        *)
-          echo "goto: unknown config key '${2:-}' (mode)" >&2
-          return 1
-          ;;
-      esac
       return
       ;;
   esac
@@ -258,7 +227,7 @@ goto() {
     return
   fi
 
-  cd "$(_goto_mode)" "$target" || return 1
+  cd "$target" || return 1
   [ "${#cmd[@]}" -eq 0 ] || "${cmd[@]}" "$target"
 }
 
