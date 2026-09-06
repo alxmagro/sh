@@ -99,6 +99,29 @@ append_once() {
   fi
 }
 
+# Replace nikit's marked block in a file with the body read from stdin,
+# leaving any lines the user keeps around it untouched. Creates the file if
+# it is missing. `nikit uninstall` strips the same markers back out.
+write_block() {
+  local file="$1" body
+  local begin='# --- nikit start' end='# --- nikit end'
+
+  body=$(cat)
+
+  [ -f "$file" ] || touch "$file"
+
+  if grep -qxF "$begin" "$file"; then
+    sed -i "/^$begin\$/,/^$end\$/d" "$file"
+  fi
+
+  # One blank line between the user's own lines and our block, never more.
+  if [ -s "$file" ] && [ -n "$(tail -n1 "$file")" ]; then
+    printf '\n' >> "$file"
+  fi
+
+  printf '%s\n%s\n\n%s\n' "$begin" "$body" "$end" >> "$file"
+}
+
 apt_update() {
   sudo apt-get update
 }
@@ -112,4 +135,4 @@ apt_install() {
 # Scripts run in a child bash, which does not inherit shell functions
 # unless they are exported.
 
-export -f log success abort packages ensure_folder append_once apt_update apt_install
+export -f log success abort packages ensure_folder append_once write_block apt_update apt_install

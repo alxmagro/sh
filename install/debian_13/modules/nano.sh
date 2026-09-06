@@ -8,7 +8,10 @@ log 'Writing nanorc...'
 # The same set as nano's --modernbindings flag, spelled out: that flag has no
 # `set` equivalent, and an alias would not reach the nano that git, sudoedit
 # or gistpad open.
-cat > "$HOME/.nanorc" << 'EOF'
+write_block "$HOME/.nanorc" << 'EOF'
+# Managed by nikit - rewritten on install, removed on `nikit uninstall`.
+# Put your own settings outside this block.
+
 bind ^X cut main
 bind ^C copy main
 bind ^V paste main

@@ -21,8 +21,17 @@ _nikit_usage() {
   echo "  uninstall          Remove nikit's files and the ~/.bashrc hook"
 }
 
+# Delete nikit's marked block from a file, if the file is there.
+_nikit_strip_block() {
+  local file="$1"
+  [ -f "$file" ] || return 0
+  sed -i '/^# --- nikit start$/,/^# --- nikit end$/d' "$file"
+}
+
 # Remove everything the install put outside the repo: the data tree, the user
-# config, and the line scripts.sh added to ~/.bashrc. Pass -y to skip the prompt.
+# config, the ~/.bashrc source line, and the marked block in ~/.bash_aliases
+# and ~/.nanorc - dropping ~/.nanorc itself when nothing else is left in it.
+# Pass -y to skip the prompt.
 _nikit_uninstall() {
   local data config line reply yes=
 
@@ -41,6 +50,8 @@ _nikit_uninstall() {
     echo "  $data"
     echo "  $config"
     echo "  '$line' from ~/.bashrc"
+    echo "  the nikit block in ~/.bash_aliases"
+    echo "  the nikit block in ~/.nanorc (the file too, if left empty)"
     printf 'Continue? [y/N] '
     read -r reply
     case "$reply" in
@@ -50,8 +61,16 @@ _nikit_uninstall() {
   fi
 
   rm -rf "$data" "$config"
+
   if [ -f "$HOME/.bashrc" ]; then
     sed -i '\|^source ~/\.local/share/nikit/init\.sh$|d' "$HOME/.bashrc"
+  fi
+
+  _nikit_strip_block "$HOME/.bash_aliases"
+
+  _nikit_strip_block "$HOME/.nanorc"
+  if [ -f "$HOME/.nanorc" ] && ! grep -q '[^[:space:]]' "$HOME/.nanorc"; then
+    rm -f "$HOME/.nanorc"
   fi
 
   echo "Done. Open a new shell to drop the loaded commands."
