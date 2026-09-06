@@ -3,12 +3,14 @@
 # goto - Jump to named target folders
 #
 # Usage:
-#   goto <key>[/<subpath>] [-r]  Jump there; -r also reveals it in the file manager
-#   goto                         List the configured roots
-#   goto --set <key> <path>      Create or update a root
-#   goto --rm <key>              Remove a root
-#   goto --config mode [-P|-L]   Get or set the cd mode (physical / logical)
-#   goto --help                  Show this help message
+#   goto <key>[/<subpath>]          Jump there
+#   goto <key>[/<subpath>] -x CMD…  Run "CMD … <path>" instead of cd'ing
+#   goto <key>[/<subpath>] -X CMD…  cd there, then run "CMD … <path>"
+#   goto                            List the configured roots
+#   goto --set <key> <path>         Create or update a root
+#   goto --rm <key>                 Remove a root
+#   goto --config mode [-P|-L]      Get or set the cd mode (physical / logical)
+#   goto --help                     Show this help message
 #
 # Configuration lives in config/goto.conf, next to the other nikit files.
 # One "namespace.key = value" per line; '#' starts a comment:
@@ -151,19 +153,22 @@ _goto_mode() {
 }
 
 goto() {
-  local key rest root target listed reveal
+  local key rest root target listed exec_flag
+  local -a cmd=()
 
   case "${1:-}" in
     --help)
       echo "goto - Jump to named target folders"
       echo
       echo "Usage:"
-      echo "  goto <key>[/<subpath>] [-r]  Jump there; -r also reveals it in the file manager"
-      echo "  goto                         List the configured roots"
-      echo "  goto --set <key> <path>      Create or update a root"
-      echo "  goto --rm <key>              Remove a root"
-      echo "  goto --config mode [-P|-L]   Get or set the cd mode (physical / logical)"
-      echo "  goto --help                  Show this help message"
+      echo "  goto <key>[/<subpath>]          Jump there"
+      echo "  goto <key>[/<subpath>] -x CMD…  Run \"CMD … <path>\" instead of cd'ing"
+      echo "  goto <key>[/<subpath>] -X CMD…  cd there, then run \"CMD … <path>\""
+      echo "  goto                            List the configured roots"
+      echo "  goto --set <key> <path>         Create or update a root"
+      echo "  goto --rm <key>                 Remove a root"
+      echo "  goto --config mode [-P|-L]      Get or set the cd mode (physical / logical)"
+      echo "  goto --help                     Show this help message"
       echo
       echo "Config: $(_goto_conf)"
       return 0
@@ -217,18 +222,24 @@ goto() {
     return 0
   fi
 
-  reveal=""
-  case "${2:-}" in
-    "") ;;
-    -r | --reveal) reveal=1 ;;
-    *) echo "goto: unknown option '$2'" >&2; return 1 ;;
-  esac
-
   key="${1%%/*}"
   case "$1" in
     */*) rest="${1#*/}" ;;
     *) rest="" ;;
   esac
+
+  exec_flag=""
+  case "${2:-}" in
+    "") ;;
+    -x) exec_flag="x"; shift 2; cmd=("$@") ;;
+    -X) exec_flag="X"; shift 2; cmd=("$@") ;;
+    *) echo "goto: unknown option '$2'" >&2; return 1 ;;
+  esac
+
+  if [ -n "$exec_flag" ] && [ "${#cmd[@]}" -eq 0 ]; then
+    echo "goto: -x/-X requires a command" >&2
+    return 1
+  fi
 
   root=$(_goto_lookup "$key") || {
     echo "goto: unknown key '$key'" >&2
@@ -242,8 +253,13 @@ goto() {
     return 1
   fi
 
+  if [ "$exec_flag" = "x" ]; then
+    "${cmd[@]}" "$target"
+    return
+  fi
+
   cd "$(_goto_mode)" "$target" || return 1
-  [ -z "$reveal" ] || xdg-open .
+  [ "${#cmd[@]}" -eq 0 ] || "${cmd[@]}" "$target"
 }
 
 _goto_complete() {
@@ -268,6 +284,17 @@ _goto_complete() {
     done < <(compgen -d -- "$cur")
     compopt -o filenames 2> /dev/null || true
     return 0
+  fi
+
+  # goto <key> -x|-X <TAB>  ->  command names
+  if [ "$COMP_CWORD" -eq 3 ]; then
+    case "${COMP_WORDS[2]}" in
+      -x | -X)
+        local IFS=$'\n'
+        COMPREPLY=($(compgen -c -- "$cur"))
+        return 0
+        ;;
+    esac
   fi
 
   # any other flag: no completion
