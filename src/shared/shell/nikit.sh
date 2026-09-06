@@ -8,6 +8,9 @@
 # bare `gnome-extensions` is already a program on any GNOME system, and ours
 # would lose to it in PATH. Prefixing is what keeps the name ours; this only
 # saves the typing.
+#
+# `uninstall` is handled here instead: there is nothing left to call once the
+# files are gone.
 
 _nikit_usage() {
   echo "Usage: nikit <command> [args]"
@@ -15,6 +18,43 @@ _nikit_usage() {
   echo "Commands:"
   echo "  app-folders        Sync, edit and restore your App Grid folders"
   echo "  gnome-extensions   Sync, edit and restore your GNOME Shell extensions"
+  echo "  uninstall          Remove nikit's files and the ~/.bashrc hook"
+}
+
+# Remove everything the install put outside the repo: the data tree, the user
+# config, and the line scripts.sh added to ~/.bashrc. Pass -y to skip the prompt.
+_nikit_uninstall() {
+  local data config line reply yes=
+
+  case "${1:-}" in
+    -y | --yes) yes=1 ;;
+    "") ;;
+    *) echo "nikit uninstall: unknown option '$1'" >&2; return 1 ;;
+  esac
+
+  data="${XDG_DATA_HOME:-$HOME/.local/share}/nikit"
+  config="${XDG_CONFIG_HOME:-$HOME/.config}/nikit"
+  line='source ~/.local/share/nikit/init.sh'
+
+  if [ -z "$yes" ]; then
+    echo "Remove:"
+    echo "  $data"
+    echo "  $config"
+    echo "  '$line' from ~/.bashrc"
+    printf 'Continue? [y/N] '
+    read -r reply
+    case "$reply" in
+      y | Y | yes) ;;
+      *) echo "Aborted."; return 1 ;;
+    esac
+  fi
+
+  rm -rf "$data" "$config"
+  if [ -f "$HOME/.bashrc" ]; then
+    sed -i '\|^source ~/\.local/share/nikit/init\.sh$|d' "$HOME/.bashrc"
+  fi
+
+  echo "Done. Open a new shell to drop the loaded commands."
 }
 
 nikit() {
@@ -24,6 +64,10 @@ nikit() {
     app-folders | gnome-extensions)
       shift
       "_nikit-$command" "$@"
+      ;;
+    uninstall)
+      shift
+      _nikit_uninstall "$@"
       ;;
     -h | --help | help | '')
       _nikit_usage
